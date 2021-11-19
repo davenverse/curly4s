@@ -8,6 +8,7 @@ ThisBuild / scalaVersion := Scala213
 ThisBuild / testFrameworks += new TestFramework("munit.Framework")
 
 val catsV = "2.6.1"
+val catsEffectV = "3.2.9"
 val catsParseV = "0.3.5"
 val http4sV = "0.23.6"
 val munitCatsEffectV = "1.0.6"
@@ -27,7 +28,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
 
     libraryDependencies ++= Seq(
       "org.typelevel"               %%% "cats-core"                  % catsV,
-      // "org.typelevel"               %% "cats-effect"                % catsEffectV,
+      "org.typelevel"               %%% "cats-effect"                % catsEffectV,
 
       // "co.fs2"                      %% "fs2-core"                   % fs2V,
       // "co.fs2"                      %% "fs2-io"                     % fs2V,
