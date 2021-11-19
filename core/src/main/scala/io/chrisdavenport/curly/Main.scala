@@ -281,6 +281,6 @@ object CurlyHttp4s {
     }
   }
 
-  def printTuple2(t: (String, String)): String = s"(\"${t._1}\",\"${t._2}\")"
+  def printTuple2(t: (String, String)): String = "(\"" + t._1 + "\",\"" + t._2 + "\")"
 
 }
