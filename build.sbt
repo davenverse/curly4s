@@ -8,6 +8,7 @@ ThisBuild / scalaVersion := Scala213
 ThisBuild / testFrameworks += new TestFramework("munit.Framework")
 
 val catsV = "2.6.1"
+val catsParseV = "0.3.5"
 val http4sV = "0.23.6"
 val munitCatsEffectV = "1.0.6"
 
@@ -32,7 +33,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       // "co.fs2"                      %% "fs2-io"                     % fs2V,
 
       "org.http4s"                  %%% "http4s-core"                 % http4sV,
-      "org.typelevel"               %%% "cats-parse"                  % "0.3.5",
+      "org.typelevel"               %%% "cats-parse"                  % catsParseV,
       // "org.http4s"                  %% "http4s-ember-server"        % http4sV,
       // "org.http4s"                  %% "http4s-ember-client"        % http4sV,
       // "org.http4s"                  %% "http4s-circe"               % http4sV,
