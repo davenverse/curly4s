@@ -22,13 +22,13 @@ object Main extends IOApp {
 
     for {
       opts <- p.liftTo[IO]
-      s <- CurlyHttp4s.fromOpts[IO](opts)
-      // _ <- IO.println(s)
-      _ <- IO.print(s.asCurl(_ => false))
-      _ <- IO.println("")
-      _ <- org.http4s.ember.client.EmberClientBuilder.default[IO].build.use(client => 
-        client.expect[String](s.covary[IO]).flatMap(s => IO.println(s.take(300))) 
-      )
+      (req, s) <- CurlyHttp4s.fromOpts[IO](opts)
+      _ <- IO.println(s)
+      // _ <- IO.print(s.asCurl(_ => false))
+      // _ <- IO.println("")
+      // _ <- org.http4s.ember.client.EmberClientBuilder.default[IO].build.use(client => 
+      //   client.expect[String](s.covary[IO]).flatMap(s => IO.println(s.take(300))) 
+      // )
     } yield ExitCode.Success
 
     // IO(println(p)).as(ExitCode.Success)
@@ -232,13 +232,13 @@ object CurlyHttp4s {
   import cats._
   import org.http4s._
   import fs2.Pure
-  def fromOpts[F[_]: MonadThrow](opts: List[Curly.Component]): F[Request[Pure]] = {
+  def fromOpts[F[_]: MonadThrow](opts: List[Curly.Component]): F[(Request[Pure], String)] = {
     val method = opts.collectFirst{
       case Opt("request", value) => Method.fromString(value) 
     }.getOrElse(Either.right(Method.GET))
 
     val uri = opts.collectFirst{
-      case Unhandled(value) => Uri.fromString(value)
+      case Unhandled(value) => Uri.fromString(value).tupleRight(value)
     }.getOrElse(Either.left(new Throwable("Missing a URI")))
 
     val headers = opts.collect{
@@ -256,18 +256,31 @@ object CurlyHttp4s {
 
     for {
       m <- method.liftTo[F]
-      u <- uri.liftTo[F]
+      (u, s) <- uri.liftTo[F]
       h <- headers.liftTo[F]
     } yield {
       val base = Request[Pure](
-        m,
-        u,
+        Method.fromString(m.toString()).fold(throw _, identity),
+        Uri.unsafeFromString(s),
         headers = Headers(h.map(t => Header.ToRaw.keyValuesToRaw(t)))
       )
-      body.fold(base){body => 
+      val outReq = body.fold(base){body => 
         val newBody = fs2.Stream(body).through(fs2.text.encode(java.nio.charset.StandardCharsets.UTF_8))
         base.withBodyStream(newBody)
       }
+      val bodyText = body.fold("_root_.fs2.Stream()")(s => s"""_root_.fs2.Stream("$s").through(_root_.fs2.text.encode(_root_.java.nio.charset.StandardCharsets.UTF_8))""")
+      val string = s"""{
+      |  _root_.org.http4s.Request[_root_.fs2.Pure](
+      |    method = _root_.org.http4s.Method.fromString("${m.toString}").fold(throw _, identity),
+      |    uri = _root_.org.http4s.Uri.unsafeFromString("${s}"),
+      |    headers = _root_.org.http4s.Headers(${h.map(printTuple2).intercalate(",")}),
+      |    body = $bodyText
+      |  )
+      |}""".stripMargin
+      (outReq, string)
     }
   }
+
+  def printTuple2(t: (String, String)): String = s"(\"${t._1}\",\"${t._2}\")"
+
 }
