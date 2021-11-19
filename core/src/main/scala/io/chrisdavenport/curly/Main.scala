@@ -24,10 +24,8 @@ object Main extends IOApp {
 
 object Curly {
   sealed trait Component
-  case class Uri(s: String) extends Component
-  // case class Method(x: String) extends Component
-  // case class Header(key: String, value: String) extends Component
-  case class Opt(option: String, value: Option[String]) extends Component
+  case class Flag(option: String) extends Component
+  case class Opt(option: String, value: String) extends Component
   case class Unhandled(value: String) extends Component
 
   import cats.parse.Rfc5234.{alpha, sp}
@@ -180,11 +178,11 @@ object Curly {
     OptC('#'.some, "progress-bar", false)
   )
 
-  def known: P[Opt] = {
-    optConfigs.foldRight[P[Opt]](P.fail){ case (optC, p) => parseOptC(optC).backtrack | p}
+  def known: P[Component] = {
+    optConfigs.foldRight[P[Component]](P.fail){ case (optC, p) => parseOptC(optC).backtrack | p}
   }
 
-  def parseOptC(optC: OptC): P[Opt] = {
+  def parseOptC(optC: OptC): P[Component] = {
     val short = optC.short match{
       case Some(c) => P.string("-") *> P.char(c) <* sp.?.void
       case None => P.fail
@@ -196,7 +194,8 @@ object Curly {
       P.until(sp).map(_.some) <* sp.? 
     } else P.unit.as(None)
     (code ~ body).map{
-      case (_, value) => Opt(optC.long, value)
+      case (_, Some(value)) => Opt(optC.long, value)
+      case (_, None) => Flag(optC.long)
     }
   }
 
