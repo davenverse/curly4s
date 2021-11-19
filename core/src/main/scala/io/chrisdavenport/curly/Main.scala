@@ -2,21 +2,26 @@ package io.chrisdavenport.curly
 
 import cats.effect._
 import cats.syntax.all._
+import cats.parse.Rfc5234.{alpha, sp}
+import cats.parse.Rfc5234
+import cats.parse.{Parser => P, Parser0 => P0}
+
 
 object Main extends IOApp {
 
+  def debugParse[A](p: P0[A], s: String): IO[Unit] = {
+    val res = p.parseAll(s)
+    val warn = res match {
+      case Left(err) => IO.println(s + "\n" + ("-" * err.failedAtOffset) + "^")
+      case _ => IO.unit
+    }
+    warn *> IO.println(res)
+  }
+
   def run(args: List[String]): IO[ExitCode] = {
     val x = "curl 'https://linux.die.net/man/1/curl' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Referer: https://www.google.com/' -H 'Connection: keep-alive' -H 'Cookie: u=0ZfsEl8jjh6BR0aoAw9hAg==' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: cross-site' -H 'Sec-Fetch-User: ?1' -H 'Cache-Control: max-age=0'"
-    // val x = "curl -H 'foo' 'https://localhost:8080/'"
-    // val p = Curly.opts.parse("--header 'foo'")
-    // val opt = Curly.OptC('H'.some, "header", true)
-    // val i = "'https://localhost:8080/'"
-    // val p = Curly.opts.parse("-H 'foo'")
-    // val p = Curly.uri.parse(i)
-    // val p = (Curly.curl *> Curly.uri ~ Curly.opts).parse(x)
-    val p = Curly.all.parseAll(x)
 
-    IO(println(p)).as(ExitCode.Success)
+    debugParse(Curly.all, x).as(ExitCode.Success)
   }
 
 }
@@ -27,10 +32,6 @@ object Curly {
   case class Flag(option: String) extends Component
   case class Opt(option: String, value: String) extends Component
   case class Unhandled(value: String) extends Component
-
-  import cats.parse.Rfc5234.{alpha, sp}
-  import cats.parse.Rfc5234
-  import cats.parse.{Parser => P, Parser0 => P0}
   
 
   val curl = sp.? *> P.ignoreCase("curl") *> sp
