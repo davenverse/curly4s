@@ -42,6 +42,8 @@ object Curly {
   case class OptC(short: Option[Char], long: String, hasValue: Boolean)
 
   val optConfigs: List[OptC] = List(
+    OptC(None, "abstract-unix-socket", true),
+    OptC(None, "alt-svc", true),
     OptC('a'.some, "append", false),
     OptC('A'.some, "user-agent", true),
     OptC(None, "anyauth", false),
@@ -70,6 +72,10 @@ object Curly {
     OptC(None, "cert-type", true),
     OptC(None, "ca-cert", true),
     OptC(None, "capath", true),
+    OptC(None, "cert-status", false),
+    OptC(None, "cert-type", true),
+    OptC(None, "compressed-ssh", false),
+    OptC(None, "compressed", false),
     OptC('f'.some, "fail", false),
     OptC(None, "ftp-account", false),
     OptC(None, "ftp-method", true),
