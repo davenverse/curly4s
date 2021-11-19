@@ -23,8 +23,12 @@ object Main extends IOApp {
     for {
       opts <- p.liftTo[IO]
       s <- CurlyHttp4s.fromOpts[IO](opts)
-      _ <- IO.println(s)
+      // _ <- IO.println(s)
       _ <- IO.print(s.asCurl(_ => false))
+      _ <- IO.println("")
+      _ <- org.http4s.ember.client.EmberClientBuilder.default[IO].build.use(client => 
+        client.expect[String](s.covary[IO]).flatMap(s => IO.println(s.take(300))) 
+      )
     } yield ExitCode.Success
 
     // IO(println(p)).as(ExitCode.Success)

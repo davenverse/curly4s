@@ -32,6 +32,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       // "co.fs2"                      %% "fs2-io"                     % fs2V,
 
       "org.http4s"                  %% "http4s-core"                 % http4sV,
+      "org.http4s"                  %% "http4s-ember-client"         % http4sV,
       "org.typelevel"               %% "cats-parse"                  % "0.3.5",
       // "org.http4s"                  %% "http4s-ember-server"        % http4sV,
       // "org.http4s"                  %% "http4s-ember-client"        % http4sV,
