@@ -193,9 +193,9 @@ object Curly {
       P.char('$').? *> P.char('\'') *> P.until(P.char('\'')).map(_.some) <* P.char('\'') <* sp.? |
       P.until(sp).map(_.some) <* sp.? 
     } else P.unit.as(None)
-    (code ~ body).map{
-      case (_, Some(value)) => Opt(optC.long, value)
-      case (_, None) => Flag(optC.long)
+    (code *> body).map{
+      case Some(value) => Opt(optC.long, value)
+      case None => Flag(optC.long)
     }
   }
 
