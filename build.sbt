@@ -31,7 +31,6 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       "org.typelevel" %%% "cats-effect"         % catsEffectV,
       "org.typelevel" %%% "cats-parse"          % catsParseV,
       "org.http4s"    %%% "http4s-core"         % http4sV,
-      "org.http4s"    %%% "http4s-ember-client" % http4sV,
       "org.typelevel" %%% "munit-cats-effect-3" % munitCatsEffectV % Test,
     )
   ).jsSettings(
