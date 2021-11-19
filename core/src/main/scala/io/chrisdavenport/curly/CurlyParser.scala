@@ -1,36 +1,44 @@
 package io.chrisdavenport.curly
 
+import cats._
 import cats.effect._
 import cats.syntax.all._
 import cats.parse.Rfc5234.{alpha, sp}
 import cats.parse.Rfc5234
 import cats.parse.{Parser => P, Parser0 => P0}
+import cats.ApplicativeError
 
-object Main extends IOApp {
+object CurlyParser {
+  sealed trait Opts
+  object Opts {
+    case class Flag(option: String) extends Opts
+    case class Opt(option: String, value: String) extends Opts
+    case class Unhandled(value: String) extends Opts
+  }
+
+  def parseOpts[F[_]: ApplicativeThrow](input: String): F[List[CurlyParser.Opts]] = {
+    CurlyParser.all.parseAll(input) match {
+      case Left(value) => 
+        val eString = "Error Parsing Components\n" + displayErrorOnString(value, input)
+        new Throwable(eString).raiseError[F, List[CurlyParser.Opts]]
+      case Right(value) =>
+        value.pure[F]
+    }
+  }
+
 
   def debugParse[A](p: P0[A], s: String): IO[Unit] = {
     val res = p.parseAll(s)
     val warn = res match {
-      case Left(err) => IO.println(s + "\n" + ("-" * err.failedAtOffset) + "^")
+      case Left(err) => IO.println(displayErrorOnString(err, s))
       case _ => IO.unit
     }
     warn *> IO.println(res)
   }
-
-  def run(args: List[String]): IO[ExitCode] = {
-    val x = "curl 'https://linux.die.net/man/1/curl' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Referer: https://www.google.com/' -H 'Connection: keep-alive' -H 'Cookie: u=0ZfsEl8jjh6BR0aoAw9hAg==' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: cross-site' -H 'Sec-Fetch-User: ?1' -H 'Cache-Control: max-age=0'"
-    debugParse(Curly.all, x).as(ExitCode.Success)
-  }
-
-}
-
-
-object Curly {
-  sealed trait Component
-  case class Flag(option: String) extends Component
-  case class Opt(option: String, value: String) extends Component
-  case class Unhandled(value: String) extends Component
   
+  def displayErrorOnString(err: P.Error, input: String): String = {
+    input + "\n" + ("-" * err.failedAtOffset) + "^"
+  }
 
   val curl = sp.? *> P.ignoreCase("curl") *> sp
 
@@ -177,11 +185,11 @@ object Curly {
     OptC('#'.some, "progress-bar", false)
   )
 
-  def known: P[Component] = {
-    optConfigs.foldRight[P[Component]](P.fail){ case (optC, p) => parseOptC(optC).backtrack | p}
+  def known: P[Opts] = {
+    optConfigs.foldRight[P[Opts]](P.fail){ case (optC, p) => parseOptC(optC).backtrack | p}
   }
 
-  def parseOptC(optC: OptC): P[Component] = {
+  def parseOptC(optC: OptC): P[Opts] = {
     val short = optC.short match{
       case Some(c) => P.string("-") *> P.char(c) <* sp.?.void
       case None => P.fail
@@ -193,81 +201,19 @@ object Curly {
       P.until(sp).map(_.some) <* sp.? 
     } else P.unit.as(None)
     (code *> body).map{
-      case Some(value) => Opt(optC.long, value)
-      case None => Flag(optC.long)
+      case Some(value) => Opts.Opt(optC.long, value)
+      case None => Opts.Flag(optC.long)
     }
   }
 
-  val unhandled: P[Unhandled] = (
+  val unhandled: P[Opts.Unhandled] = (
     P.char('$').?.with1 *> P.char('\'') *> P.until(P.char('\'')) <* P.char('\'') <* sp.? |
     P.until(sp) <* sp.? 
-  ).map(Unhandled(_))
+  ).map(Opts.Unhandled(_))
 
 
-  val opts: P[Component] = known | unhandled //| method  | header | unknown
+  val opts: P[Opts] = known | unhandled //| method  | header | unknown
 
   val all = curl *>
     opts.rep0
-
-
-}
-
-object CurlyHttp4s {
-  import cats._
-  import org.http4s._
-  import fs2.Pure
-  import Curly._
-
-  
-  def fromOpts[F[_]: MonadThrow](opts: List[Curly.Component]): F[(Request[Pure], String)] = {
-    val method = opts.collectFirst{
-      case Opt("request", value) => Method.fromString(value) 
-    }.getOrElse(Either.right(Method.GET))
-
-    val uri = opts.collectFirst{
-      case Unhandled(value) => Uri.fromString(value).tupleRight(value)
-    }.getOrElse(Either.left(new Throwable("Missing a URI")))
-
-    val headers = opts.collect{
-      // Hackity Hack
-      case Opt(header, value) if (value.split(":").toList.size == 2) => value.split(":").toList match {
-        case header :: value :: Nil => 
-          (header.trim(), value.trim()).asRight
-        case _ => Either.left(new Throwable(s"Incorrect Header $header $value"))
-      }
-    }.sequence
-
-    val body = opts.collectFirst{
-      case Opt("data-binary", value) => value
-    }
-
-    for {
-      m <- method.liftTo[F]
-      (u, s) <- uri.liftTo[F]
-      h <- headers.liftTo[F]
-    } yield {
-      val base = Request[Pure](
-        Method.fromString(m.toString()).fold(throw _, identity),
-        Uri.unsafeFromString(s),
-        headers = Headers(h.map(t => Header.ToRaw.keyValuesToRaw(t)))
-      )
-      val outReq = body.fold(base){body => 
-        val newBody = fs2.Stream(body).through(fs2.text.encode(java.nio.charset.StandardCharsets.UTF_8))
-        base.withBodyStream(newBody)
-      }
-      val bodyText = body.fold("_root_.fs2.Stream()")(s => s"""_root_.fs2.Stream("$s").through(_root_.fs2.text.encode(_root_.java.nio.charset.StandardCharsets.UTF_8))""")
-      val string = s"""{
-      |  _root_.org.http4s.Request[_root_.fs2.Pure](
-      |    method = _root_.org.http4s.Method.fromString("${m.toString}").fold(throw _, identity),
-      |    uri = _root_.org.http4s.Uri.unsafeFromString("${s}"),
-      |    headers = _root_.org.http4s.Headers(${h.map(printTuple2).intercalate(",")}),
-      |    body = $bodyText
-      |  )
-      |}""".stripMargin
-      (outReq, string)
-    }
-  }
-
-  def printTuple2(t: (String, String)): String = "(\"" + t._1 + "\",\"" + t._2 + "\")"
-
 }
