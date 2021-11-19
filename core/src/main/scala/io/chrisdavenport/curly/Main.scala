@@ -2,21 +2,32 @@ package io.chrisdavenport.curly
 
 import cats.effect._
 import cats.syntax.all._
+import cats.ApplicativeError
+import org.http4s.Request
+import io.chrisdavenport.curly.Curly.Opt
+import io.chrisdavenport.curly.Curly.Unhandled
 
 object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = {
     val x = "curl 'https://linux.die.net/man/1/curl' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Referer: https://www.google.com/' -H 'Connection: keep-alive' -H 'Cookie: u=0ZfsEl8jjh6BR0aoAw9hAg==' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: cross-site' -H 'Sec-Fetch-User: ?1' -H 'Cache-Control: max-age=0'"
-    // val x = "curl -H 'foo' 'https://localhost:8080/'"
+    // val x = "curl -H 'foo:bar' 'https://localhost:8080/'"
     // val p = Curly.opts.parse("--header 'foo'")
     // val opt = Curly.OptC('H'.some, "header", true)
     // val i = "'https://localhost:8080/'"
     // val p = Curly.opts.parse("-H 'foo'")
     // val p = Curly.uri.parse(i)
     // val p = (Curly.curl *> Curly.uri ~ Curly.opts).parse(x)
-    val p = Curly.all.parseAll(x)
+    val p = Curly.all.parseAll(x).leftMap(e => new Throwable(s"$e"))
 
-    IO(println(p)).as(ExitCode.Success)
+    for {
+      opts <- p.liftTo[IO]
+      s <- CurlyHttp4s.fromOpts[IO](opts)
+      _ <- IO.println(s)
+      _ <- IO.print(s.asCurl(_ => false))
+    } yield ExitCode.Success
+
+    // IO(println(p)).as(ExitCode.Success)
   }
 
 }
@@ -211,4 +222,48 @@ object Curly {
     opts.rep0
 
 
+}
+
+object CurlyHttp4s {
+  import cats._
+  import org.http4s._
+  import fs2.Pure
+  def fromOpts[F[_]: MonadThrow](opts: List[Curly.Component]): F[Request[Pure]] = {
+    val method = opts.collectFirst{
+      case Opt("request", value) => Method.fromString(value) 
+    }.getOrElse(Either.right(Method.GET))
+
+    val uri = opts.collectFirst{
+      case Unhandled(value) => Uri.fromString(value)
+    }.getOrElse(Either.left(new Throwable("Missing a URI")))
+
+    val headers = opts.collect{
+      // Hackity Hack
+      case Opt(header, value) if (value.split(":").toList.size == 2) => value.split(":").toList match {
+        case header :: value :: Nil => 
+          (header.trim(), value.trim()).asRight
+        case _ => Either.left(new Throwable(s"Incorrect Header $header $value"))
+      }
+    }.sequence
+
+    val body = opts.collectFirst{
+      case Opt("data-binary", value) => value
+    }
+
+    for {
+      m <- method.liftTo[F]
+      u <- uri.liftTo[F]
+      h <- headers.liftTo[F]
+    } yield {
+      val base = Request[Pure](
+        m,
+        u,
+        headers = Headers(h.map(t => Header.ToRaw.keyValuesToRaw(t)))
+      )
+      body.fold(base){body => 
+        val newBody = fs2.Stream(body).through(fs2.text.encode(java.nio.charset.StandardCharsets.UTF_8))
+        base.withBodyStream(newBody)
+      }
+    }
+  }
 }
