@@ -24,10 +24,10 @@ object CurlyData {
     }.getOrElse(new Throwable("No Uri Component Found").raiseError)
     val headers = opts.collect{
       // Hackity Hack
-      case Opt(header, value) if (value.split(":").toList.size == 2) => value.split(":").toList match {
+      case Opt("header", value) if (value.split(":").toList.size == 2) => value.split(":").toList match {
         case header :: value :: Nil => 
           (header.trim(), value.trim()).pure[F]
-        case _ => new Throwable(s"Incorrect Header $header $value").raiseError[F, (String, String)]
+        case _ => new Throwable(s"Incorrect Header $value").raiseError[F, (String, String)]
       }
     }.sequence
 
