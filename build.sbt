@@ -62,7 +62,7 @@ lazy val `curly` = project.in(file("."))
 // import .util.JSON._
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
-  .enablePlugins(NpmPackagePlugin)
+  .jsEnablePlugins(NpmPackagePlugin)
   .in(file("core"))
   .settings(
     name := "curly4s",
