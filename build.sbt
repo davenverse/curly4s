@@ -36,6 +36,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
   ).jsSettings(
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule)},
     scalaJSUseMainModuleInitializer := true,
+    scalaJSStage in Global := FullOptStage,
   )
 
 lazy val site = project.in(file("site"))
