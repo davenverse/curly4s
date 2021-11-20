@@ -61,13 +61,15 @@ jobs:
           gem install saas
           gem install jekyll -v 4.2.0
 
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
       - name: Check that workflows are up to date
         run: sbt --client '++${{ matrix.scala }}; githubWorkflowCheck'
 
-      - run: sbt --client '++${{ matrix.scala }}; test; mimaReportBinaryIssues'
-
-      - if: matrix.scala == '2.13.7'
-        run: sbt --client '++${{ matrix.scala }}; site/makeMicrosite'
+      - name: Install artifacts to npm
+        run: sbt --client '++${{ matrix.scala }}; test; npmPackageInstall'
 
   publish:
     name: Publish Artifacts
@@ -114,15 +116,11 @@ jobs:
           gem install saas
           gem install jekyll -v 4.2.0
 
-      - name: Publish artifacts to Sonatype
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Publish artifacts to npm
         env:
-          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-          PGP_SECRET: ${{ secrets.PGP_SECRET }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-        run: sbt --client '++${{ matrix.scala }}; ci-release'
-
-      - uses: christopherdavenport/create-ghpages-ifnotexists@v1
-
-      - name: Publish microsite
-        run: sbt --client '++${{ matrix.scala }}; site/publishMicrosite'
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: sbt --client '++${{ matrix.scala }}; npmPackageNpmrc; npmPackagePublish'
