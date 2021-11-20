@@ -8,6 +8,7 @@ ThisBuild / scalaVersion := Scala213
 
 ThisBuild / testFrameworks += new TestFramework("munit.Framework")
 
+ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(WorkflowStep.Use(
   UseRef.Public("actions", "setup-node", "v1"),
