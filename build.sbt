@@ -77,7 +77,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
 
   ).jsSettings(
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule)},
-    Compile / scalaJSUseMainModuleInitializer := true,
+    scalaJSUseMainModuleInitializer := true,
     scalaJSStage in Global := FullOptStage,
     npmPackageAuthor := "Christopher Davenport",
     npmPackageDescription := "Curl Command Line Parser which outputs http4s code",
