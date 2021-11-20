@@ -1,6 +1,6 @@
 # curly4s - Oh! A WISE guy, eh? [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/curly4s_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/curly4s_2.13) ![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-Scala-blue.svg)
 
-## [Head on over to the microsite](https://ChristopherDavenport.github.io/curly)
+## [Head on over to the microsite](https://davenverse.github.io/curly4s)
 
 ## Quick Start
 
