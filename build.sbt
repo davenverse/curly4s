@@ -75,6 +75,10 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       "org.typelevel" %%% "munit-cats-effect-3" % munitCatsEffectV % Test,
     ),
 
+  ).jsSettings(
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule)},
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSStage in Global := FullOptStage,
     npmPackageAuthor := "Christopher Davenport",
     npmPackageDescription := "Curl Command Line Parser which outputs http4s code",
     npmPackageKeywords := Seq(
@@ -84,10 +88,6 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
     ),
     npmPackageStage := Stage.FullOpt,
     npmPackageBinaryEnable := true,
-  ).jsSettings(
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule)},
-    scalaJSUseMainModuleInitializer := true,
-    scalaJSStage in Global := FullOptStage,
   )
 
 lazy val site = project.in(file("site"))
