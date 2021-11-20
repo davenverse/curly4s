@@ -26,12 +26,14 @@ object CurlyHttp4s {
         val newBody = fs2.Stream(body).through(fs2.text.encode(java.nio.charset.StandardCharsets.UTF_8))
         base.withBodyStream(newBody)
       }
-      val bodyText = body.fold("_root_.fs2.Stream()")(s => s"""_root_.fs2.Stream("$s").through(_root_.fs2.text.encode(_root_.java.nio.charset.StandardCharsets.UTF_8))""")
+      val bodyText = body.fold("Stream()")(s => s"""Stream("$s").through(text.encode(StandardCharsets.UTF_8))""")
       val string = s"""{
-      |  _root_.org.http4s.Request[_root_.fs2.Pure](
-      |    method = _root_.org.http4s.Method.fromString("${m.toString}").fold(throw _, identity),
-      |    uri = _root_.org.http4s.Uri.unsafeFromString("${data.uri}"),
-      |    headers = _root_.org.http4s.Headers(${data.headers.map(printTuple2).intercalate(",")}),
+      |  import _root_.org.http4s.{Request, Method, Uri, Headers}
+      |  import _root_.fs2.{Stream, Pure${if(body.isDefined) ", text" else ""}}${if(body.isDefined) "\n  import _root_.java.nio.charset.StandardCharsets" else ""}
+      |  Request[Pure](
+      |    method = Method.fromString("${m.toString}").fold(throw _, identity),
+      |    uri = Uri.unsafeFromString("${data.uri}"),
+      |    headers = Headers(${data.headers.map(printTuple2).intercalate(",")}),
       |    body = $bodyText
       |  )
       |}""".stripMargin
@@ -40,5 +42,4 @@ object CurlyHttp4s {
   }
 
   def printTuple2(t: (String, String)): String = "(\"" + t._1 + "\",\"" + t._2 + "\")"
-
 }

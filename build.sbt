@@ -82,11 +82,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       "http4s"
     ),
     npmPackageStage := Stage.FullOpt,
-    npmPackageAdditionalNpmConfig := Map(
-      "bin" -> _root_.io.circe.Json.obj(
-        "curly4s" -> _root_.io.circe.Json.fromString("main.js")
-      )
-    )
+    npmPackageBinaryEnable := true,
   ).jsSettings(
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule)},
     scalaJSUseMainModuleInitializer := true,
