@@ -19,8 +19,15 @@ object Curly extends IOApp {
       _ <- IO.println(s)
     } yield () 
     
-    test.as(ExitCode.Success)
+    errorHandling(test)
   }
+
+  def errorHandling[A](io: IO[A]): IO[ExitCode] = 
+    io.as(ExitCode.Success).handleErrorWith(e => 
+      cats.effect.std.Console[IO].errorln(
+        Option(e.getMessage).getOrElse(e).toString()
+      ).as(ExitCode.Error)
+    )
 
   def parseArgs(args: List[String]): IO[String] = args match {
     case head :: Nil => head.pure[IO]
