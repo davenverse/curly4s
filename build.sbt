@@ -58,6 +58,7 @@ lazy val `curly` = project.in(file("."))
   .enablePlugins(NoPublishPlugin)
   .aggregate(core.jvm, core.js)
 
+// import .util.JSON._
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(NpmPackagePlugin)
@@ -81,6 +82,11 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       "http4s"
     ),
     npmPackageStage := Stage.FullOpt,
+    npmPackageAdditionalNpmConfig := Map(
+      "bin" -> _root_.io.circe.Json.obj(
+        "curly4s" -> _root_.io.circe.Json.fromString("main.js")
+      )
+    )
   ).jsSettings(
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule)},
     scalaJSUseMainModuleInitializer := true,
