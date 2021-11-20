@@ -40,13 +40,13 @@ class MainSpec extends munit.FunSuite {
     assertEquals(actual, Right(expected))
   }
 
-  test("with two headers separated by a long arg".fail) {
-    val cmd = "curl 'https://typelevel.org/' -H 'User-Agent: Mozilla/5.0' --compress -H 'Connection: keep-alive'"
+  test("with two headers separated by a long arg") {
+    val cmd = "curl 'https://typelevel.org/' -H 'User-Agent: Mozilla/5.0' --compressed -H 'Connection: keep-alive'"
     val actual = CurlyParser.all.parseAll(cmd)
     val expected = List(
       Unhandled("https://typelevel.org/"),
       Opt("header", "User-Agent: Mozilla/5.0"),
-      Flag("compress"),
+      Flag("compressed"),
       Opt("header", "Connection: keep-alive"),
     )
     assertEquals(actual, Right(expected))
