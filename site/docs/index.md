@@ -49,7 +49,8 @@ def setOutput(code: String): IO[Unit] = IO {
       "#output",
       js.Dynamic.literal(
         code = code,
-        sbtConfig = """libraryDependencies += "org.http4s" %% "http4s-core" % "0.23.6""""
+        sbtConfig = """libraryDependencies += "org.http4s" %% "http4s-core" % "0.23.6"""",
+        scalaVersion = "2.13.7"
       )
     )
   }
