@@ -8,16 +8,20 @@ layout: home
 ## Quick Start
 
 ```scala mdoc:js:invisible
-<input type="text" id="curl" style="height:120px; width:200px;">
-<button id="button">Run Curly4s</button>
-<br>
-<div id="output"></div> 
+<div>
+  <input type="text" id="curl" size="128"/>
+  <button id="button">Run Curly4s</button>
+</div>
+
+<script src="https://scastie.scala-lang.org/embedded.js"></script>
+<pre id="output" class="output"></pre> 
 ---
 import cats.syntax.all._
 import cats.effect._
 import cats.effect.unsafe.implicits._
 import org.scalajs.dom._
 import io.chrisdavenport.curly._
+import scala.scalajs.js
 
 val inputElement = document.getElementById("curl").asInstanceOf[html.Input]
 val outputElement = document.getElementById("output")
@@ -30,12 +34,19 @@ val process = for {
   (_, s) <- CurlyHttp4s.fromData[IO](data)
 } yield s
 
-def handleErrors(io: IO[String]): IO[String] = 
-  io.handleErrorWith(e => e.toString.pure[IO])
+def handleErrors(io: IO[Unit]): IO[Unit] = 
+  io.handleErrorWith(e => IO(outputElement.innerHTML = e.toString))
 
-def setOutput(s: String): IO[Unit] = IO(outputElement.innerHTML = s)
+def clearOutput: IO[Unit] =
+  IO(outputElement.innerHTML = "") >>
+    IO(outputElement.asInstanceOf[js.Dynamic].style.display = "") >>
+    IO(document.getElementsByClassName("scastie")(0).asInstanceOf[js.UndefOr[Element]].foreach(_.remove()))
 
-def run = handleErrors(process).flatMap(setOutput)
+def setOutput(code: String): IO[Unit] = IO {
+    js.Dynamic.global.scastie.Embedded("#output", js.Dynamic.literal(code = code))
+  }
+
+def run = clearOutput >> handleErrors(process.flatMap(setOutput))
 
 button.onclick = _ => run.unsafeRunAndForget()
 ```
