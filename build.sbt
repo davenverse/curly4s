@@ -35,7 +35,7 @@ ThisBuild / githubWorkflowPublishPreamble ++= Seq(
 
 ThisBuild / githubWorkflowPublish ++= Seq(
   WorkflowStep.Sbt(
-    List("coreJS/npmPackageNpmrc", "coreJS/npmPackagePublish"),
+    List("npmPackageNpmrc", "npmPackagePublish"),
     name = Some("Publish artifacts to npm"),
     env = Map(
       "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}" // https://docs.npmjs.com/using-private-packages-in-a-ci-cd-workflow#set-the-token-as-an-environment-variable-on-the-cicd-server
@@ -44,14 +44,11 @@ ThisBuild / githubWorkflowPublish ++= Seq(
 )
 
 
-
 val catsV = "2.6.1"
 val catsEffectV = "3.2.9"
 val catsParseV = "0.3.6"
 val http4sV = "0.23.6"
 val munitCatsEffectV = "1.0.6"
-
-
 
 // Projects
 lazy val `curly` = project.in(file("."))
@@ -90,13 +87,22 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
     npmPackageBinaryEnable := true,
   )
 
+lazy val jsdocs = project
+  .enablePlugins(ScalaJSPlugin)
+  .dependsOn(core.js)
+  .settings(
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.0.0",
+    evictionErrorLevel := sbt.util.Level.Info,
+
+  )
+
 lazy val site = project.in(file("site"))
   .disablePlugins(MimaPlugin)
   .enablePlugins(DavenverseMicrositePlugin)
-  .dependsOn(core.jvm)
   .settings{
     import microsites._
     Seq(
+      mdocJS := Some(jsdocs),
       micrositeDescription := "Oh! A WISE guy, eh?",
     )
   }
