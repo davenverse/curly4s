@@ -129,6 +129,13 @@ jobs:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: sbt --client '++${{ matrix.scala }}; ci-release'
 
+      - uses: christopherdavenport/create-ghpages-ifnotexists@v1
+
+      - name: Publish microsite
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: sbt --client '++${{ matrix.scala }}; site/publishMicrosite'
+
       - name: Publish artifacts to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
