@@ -16,3 +16,13 @@ Then you should be able to invoke it from command line with a curl command
 ```
 curly4s "curl 'https://www.icanhazdadjoke.com' -H 'Accept: application/json'"
 ```
+
+### If you prefer the jvm
+
+Follow the instructions on [installing coursier](https://get-coursier.io/)
+
+Then install via
+
+```sh
+cs install --channel https://git.io/J1yo2 curly4s
+```
