@@ -9,7 +9,7 @@ layout: home
 
 ```scala mdoc:js:invisible
 <div>
-  <input type="text" id="curl" size="128"/>
+  <input type="text" id="curl" size="128" value="curl 'https://www.icanhazdadjoke.com' -H 'Accept: application/json'"/>
   <button id="button" disabled>Run Curly4s</button>
 </div>
 
