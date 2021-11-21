@@ -33,7 +33,26 @@ ThisBuild / githubWorkflowPublishPreamble ++= Seq(
   )
 )
 
-ThisBuild / githubWorkflowPublish ++= Seq(
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    List("ci-release"),
+    name = Some("Publish artifacts to Sonatype"),
+    env = Map(
+      "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
+      "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
+      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}",
+      "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}", // Here because when we start thin client need env in scope so it can be reused for package publish
+    )
+  ),
+  WorkflowStep.Use(UseRef.Public("christopherdavenport", "create-ghpages-ifnotexists", "v1")),
+  WorkflowStep.Sbt(
+    List("site/publishMicrosite"),
+    name = Some("Publish microsite"),
+    env = Map(
+      "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}"
+    )
+  ),
   WorkflowStep.Sbt(
     List("npmPackageNpmrc", "npmPackagePublish"),
     name = Some("Publish artifacts to npm"),

@@ -122,16 +122,12 @@ jobs:
 
       - name: Publish artifacts to Sonatype
         env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-          PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: sbt --client '++${{ matrix.scala }}; ci-release'
-
-      - uses: christopherdavenport/create-ghpages-ifnotexists@v1
-
-      - name: Publish microsite
-        run: sbt --client '++${{ matrix.scala }}; site/publishMicrosite'
 
       - name: Publish artifacts to npm
         env:
