@@ -45,7 +45,13 @@ def clearOutput: IO[Unit] =
     IO(document.getElementsByClassName("scastie")(0).asInstanceOf[js.UndefOr[Element]].foreach(_.remove()))
 
 def setOutput(code: String): IO[Unit] = IO {
-    js.Dynamic.global.scastie.Embedded("#output", js.Dynamic.literal(code = code))
+    js.Dynamic.global.scastie.Embedded(
+      "#output",
+      js.Dynamic.literal(
+        code = code,
+        sbtConfig = """libraryDependencies += "org.http4s" %% "http4s-core" % "0.23.6""""
+      )
+    )
   }
 
 def run = clearOutput >> handleErrors(process.flatMap(setOutput))
