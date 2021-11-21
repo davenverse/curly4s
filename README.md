@@ -4,11 +4,15 @@
 
 ## Quick Start
 
-To use curly in an existing SBT project with Scala 2.12 or a later version, add the following dependencies to your
-`build.sbt` depending on your needs:
+To get started locally. Install with npm. You will want to confirm the npm install location for your
+machine is on your path.
 
-```scala
-libraryDependencies ++= Seq(
-  "io.chrisdavenport" %% "curly4s" % "<version>"
-)
+```sh
+sudo npm install -g curly4s 
+```
+
+Then you should be able to invoke it from command line with a curl command
+
+```
+curly4s "curl 'https://www.icanhazdadjoke.com' -H 'Accept: application/json'"
 ```
