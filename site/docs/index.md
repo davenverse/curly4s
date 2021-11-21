@@ -10,7 +10,7 @@ layout: home
 ```scala mdoc:js:invisible
 <div>
   <input type="text" id="curl" size="128"/>
-  <button id="button">Run Curly4s</button>
+  <button id="button" disabled>Run Curly4s</button>
 </div>
 
 <script src="https://scastie.scala-lang.org/embedded.js"></script>
@@ -26,6 +26,8 @@ import scala.scalajs.js
 val inputElement = document.getElementById("curl").asInstanceOf[html.Input]
 val outputElement = document.getElementById("output")
 val button = document.getElementById("button").asInstanceOf[html.Button]
+
+window.addEventListener("load", (_: Any) => button.disabled = false)
 
 val process = for {
   command <- IO(inputElement.value)
