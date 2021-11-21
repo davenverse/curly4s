@@ -48,7 +48,7 @@ def setOutput(code: String): IO[Unit] = IO {
     js.Dynamic.global.scastie.Embedded(
       "#output",
       js.Dynamic.literal(
-        code = code,
+        code = "\n" + code,
         sbtConfig = """libraryDependencies += "org.http4s" %% "http4s-core" % "0.23.6"""",
         scalaVersion = "2.13.7"
       )
