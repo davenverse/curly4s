@@ -42,7 +42,7 @@ object CurlyParser {
 
   val curl = sp.? *> P.ignoreCase("curl") *> sp
 
-  val uri = P.char('\'') *> P.until(P.char('\'')) <* P.char('\'') <* sp.?
+  val dropUntilNext = P.until(P.not(sp | P.char('\\') | P.char('\n'))).void
 
   case class OptC(short: Option[Char], long: String, hasValue: Boolean)
 
@@ -191,14 +191,14 @@ object CurlyParser {
 
   def parseOptC(optC: OptC): P[Opts] = {
     val short = optC.short match{
-      case Some(c) => P.string("-") *> P.char(c) <* sp.?.void
+      case Some(c) => P.string("-") *> P.char(c) <* dropUntilNext.?.void
       case None => P.fail
     }
-    val long = P.string("--") *> P.string(optC.long) <* sp.?.void
+    val long = P.string("--") *> P.string(optC.long) <* dropUntilNext.?.void
     val code = short | long
     val body = if (optC.hasValue) {
-      P.char('$').? *> P.char('\'') *> P.until(P.char('\'')).map(_.some) <* P.char('\'') <* sp.? |
-      P.until(sp).map(_.some) <* sp.? 
+      P.char('$').? *> P.char('\'') *> P.until(P.char('\'')).map(_.some) <* P.char('\'') <* dropUntilNext.? |
+      P.until(sp).map(_.some) <* dropUntilNext.? 
     } else P.unit.as(None)
     (code *> body).map{
       case Some(value) => Opts.Opt(optC.long, value)
@@ -207,8 +207,8 @@ object CurlyParser {
   }
 
   val unhandled: P[Opts.Unhandled] = (
-    P.char('$').?.with1 *> P.char('\'') *> P.until(P.char('\'')) <* P.char('\'') <* sp.? |
-    P.until(sp) <* sp.? 
+    P.char('$').?.with1 *> P.char('\'') *> P.until(P.char('\'')) <* P.char('\'') <* dropUntilNext.? |
+    P.until(sp) <* dropUntilNext.? 
   ).map(Opts.Unhandled(_))
 
 

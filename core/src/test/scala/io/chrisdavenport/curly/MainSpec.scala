@@ -42,4 +42,13 @@ class MainSpec extends munit.FunSuite {
     assertEquals(actual.map(_.length), Right(4))
   }
 
+  test("with slash new line notation") {
+    val cmd = """curl 'https://typelevel.org/' \
+    |  -H 'User-Agent: Mozilla/5.0' \
+    |  --compress \
+    |  -H 'Connection: keep-alive'""".stripMargin
+    val actual = CurlyParser.all.parseAll(cmd)
+    assertEquals(actual.map(_.length), Right(4))
+  }
+
 }
