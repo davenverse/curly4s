@@ -42,7 +42,7 @@ object CurlyParser {
 
   val curl = sp.? *> P.ignoreCase("curl") *> sp
 
-  val dropUntilNext = P.until(P.not(sp | P.char('\\'))).void
+  val dropUntilNext = P.until(P.not(sp | P.char('\\') | P.char('\n'))).void
 
   case class OptC(short: Option[Char], long: String, hasValue: Boolean)
 
