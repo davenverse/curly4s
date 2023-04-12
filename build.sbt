@@ -67,7 +67,7 @@ val catsV = "2.6.1"
 val catsEffectV = "3.2.9"
 val catsParseV = "0.3.6"
 val http4sV = "0.23.6"
-val munitCatsEffectV = "1.0.6"
+val munitCatsEffectV = "1.0.7"
 
 // Projects
 lazy val `curly` = project.in(file("."))
