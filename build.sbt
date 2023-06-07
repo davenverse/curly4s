@@ -3,7 +3,7 @@ import org.scalajs.sbtplugin.Stage
 
 val Scala213 = "2.13.7"
 
-ThisBuild / crossScalaVersions := Seq("2.12.14", Scala213)
+ThisBuild / crossScalaVersions := Seq("2.12.18", Scala213)
 ThisBuild / scalaVersion := Scala213
 
 ThisBuild / testFrameworks += new TestFramework("munit.Framework")
