@@ -66,29 +66,21 @@ ThisBuild / githubWorkflowPublishPreamble ++= Seq(
 
 ThisBuild / githubWorkflowPublish := Seq(
   WorkflowStep.Sbt(
-    List("ci-release"),
+    List("tlCiRelease"),
     name = Some("Publish artifacts to Sonatype"),
     env = Map(
       "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
       "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
       "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
       "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}",
-      "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}", // Here because when we start thin client need env in scope so it can be reused for package publish
-    )
-  ),
-  WorkflowStep.Use(UseRef.Public("christopherdavenport", "create-ghpages-ifnotexists", "v1")),
-  WorkflowStep.Sbt(
-    List("site/publishMicrosite"),
-    name = Some("Publish microsite"),
-    env = Map(
-      "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}"
+      "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}" // in scope so the npm publish below can reuse it
     )
   ),
   WorkflowStep.Sbt(
     List("npmPackageNpmrc", "npmPackagePublish"),
     name = Some("Publish artifacts to npm"),
     env = Map(
-      "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}" // https://docs.npmjs.com/using-private-packages-in-a-ci-cd-workflow#set-the-token-as-an-environment-variable-on-the-cicd-server
+      "NPM_TOKEN" -> "${{ secrets.NPM_TOKEN }}"
     )
   )
 )
