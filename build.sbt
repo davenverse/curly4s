@@ -1,9 +1,10 @@
 ThisBuild / tlBaseVersion := "0.1" // current series x.y
 
-// v0.1.0 was tagged but published nothing: the hand-rolled publish step still
-// called ci-release, which does not exist under sbt-typelevel 0.8.x. Drop it
-// from the MiMa baseline, which would otherwise fail to resolve it.
-ThisBuild / tlMimaPreviousVersions ~= (_ - "0.1.0")
+// Nothing in the 0.1 series has ever reached Maven Central: v0.1.0 and v0.1.1
+// were both tagged but published nothing (a stale ci-release publish step, then
+// this very MiMa lookup). The last real release is 0.0.8, in the previous
+// series, so there is no valid baseline for 0.1.x.
+ThisBuild / tlMimaPreviousVersions := Set.empty
 
 ThisBuild / organization := "io.chrisdavenport"
 ThisBuild / organizationName := "Christopher Davenport"
