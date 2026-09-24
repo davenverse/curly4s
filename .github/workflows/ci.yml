@@ -158,14 +158,7 @@ jobs:
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
-        run: sbt ci-release
-
-      - uses: christopherdavenport/create-ghpages-ifnotexists@v1
-
-      - name: Publish microsite
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: sbt site/publishMicrosite
+        run: sbt tlCiRelease
 
       - name: Publish artifacts to npm
         env:
