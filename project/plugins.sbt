@@ -1,4 +1,5 @@
-// addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.20")
-addSbtPlugin("io.chrisdavenport" % "sbt-davenverse" % "0.1.4")
+addSbtPlugin("org.typelevel" % "sbt-typelevel-ci-release" % "0.8.7")
+addSbtPlugin("org.typelevel" % "sbt-typelevel-site" % "0.8.7")
 addSbtPlugin("io.chrisdavenport" % "sbt-npm-package" % "0.0.5")
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.24" )
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.22.0")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.2")
