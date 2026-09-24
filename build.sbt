@@ -1,5 +1,10 @@
 ThisBuild / tlBaseVersion := "0.1" // current series x.y
 
+// v0.1.0 was tagged but published nothing: the hand-rolled publish step still
+// called ci-release, which does not exist under sbt-typelevel 0.8.x. Drop it
+// from the MiMa baseline, which would otherwise fail to resolve it.
+ThisBuild / tlMimaPreviousVersions ~= (_ - "0.1.0")
+
 ThisBuild / organization := "io.chrisdavenport"
 ThisBuild / organizationName := "Christopher Davenport"
 ThisBuild / startYear := Some(2021)
