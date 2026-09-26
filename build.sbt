@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.1" // current series x.y
+ThisBuild / tlBaseVersion := "0.2" // current series x.y
 
 // Nothing in the 0.1 series has ever reached Maven Central: v0.1.0 and v0.1.1
 // were both tagged but published nothing (a stale ci-release publish step, then
