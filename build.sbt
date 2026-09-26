@@ -19,7 +19,7 @@ ThisBuild / developers := List(
 ThisBuild / tlCiReleaseBranches := Seq()
 
 val Scala213tl = "2.13.18"
-ThisBuild / crossScalaVersions := Seq("2.12.20",  Scala213tl)
+ThisBuild / crossScalaVersions := Seq(Scala213tl)
 ThisBuild / scalaVersion := Scala213tl
 
 // Compiler settings DavenversePlugin injected globally. sbt-typelevel-ci-release
@@ -41,7 +41,7 @@ ThisBuild / scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) m
 
 import org.scalajs.sbtplugin.Stage
 
-val Scala213 = "2.13.7"
+val Scala213 = "2.13.18"
 
 
 ThisBuild / testFrameworks += new TestFramework("munit.Framework")
@@ -93,11 +93,11 @@ ThisBuild / githubWorkflowPublish := Seq(
 )
 
 
-val catsV = "2.6.1"
-val catsEffectV = "3.2.9"
-val catsParseV = "0.3.6"
-val http4sV = "0.23.6"
-val munitCatsEffectV = "1.0.6"
+val catsV = "2.13.0"
+val catsEffectV = "3.7.1"
+val catsParseV = "1.1.0"
+val http4sV = "0.23.37"
+val munitCatsEffectV = "2.2.1"
 
 // Projects
 lazy val `curly` = project.in(file("."))
@@ -117,7 +117,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       "org.typelevel" %%% "cats-effect"         % catsEffectV,
       "org.typelevel" %%% "cats-parse"          % catsParseV,
       "org.http4s"    %%% "http4s-core"         % http4sV,
-      "org.typelevel" %%% "munit-cats-effect-3" % munitCatsEffectV % Test,
+      "org.typelevel" %%% "munit-cats-effect" % munitCatsEffectV % Test,
     ),
 
   ).jsSettings(
